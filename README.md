@@ -55,6 +55,16 @@ pb, _ := c.PreviousBlock(1) // by index, 1 - 1 = 0, so this will equal blk1, if 
 
 `bin/cover` for test suite with coverage output.
 
+## Documentation
+
+Available through [godoc.org](https://godoc.org/github.com/ohmybrew/gochain).
+
+Important files:
+
++ `block.go` contains the struct for a block and its methods.
++ `chain.go` contains the struct for the chain and its methods.
++ `gochain.go` is empty, simply the package index.
+
 ## LICENSE
 
 This project is released under the MIT [license](https://github.com/ohmybrew/gochain/blob/master/LICENSE).
