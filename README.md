@@ -1,9 +1,11 @@
-# GoChain
+# gochain
 
 [![Build Status](https://secure.travis-ci.org/ohmybrew/gochain.png?branch=master)](http://travis-ci.org/ohmybrew/gochain)
 [![Coverage Status](https://coveralls.io/repos/github/ohmybrew/gochain/badge.svg?branch=master)](https://coveralls.io/github/ohmybrew/gochain?branch=master)
 
-Port of my Blockchain-PHP library to a Golang. The speed is roughly 90% faster.
+Port of my Blockchain-PHP library to a Golang package. The speed is roughly 90% faster.
+
+This is a simple implementation which uses a basic SHA256 problem to solve for mining based on a padding of zeros for the difficulty.
 
 ## Usage
 
