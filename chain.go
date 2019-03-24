@@ -1,7 +1,7 @@
 package gochain
 
 import (
-	"github.com/google/go-cmp/cmp"
+	"bytes"
 	"time"
 )
 
@@ -100,5 +100,5 @@ func (c Chain) IsValid() bool {
 }
 
 func (c Chain) IsSameBlock(b1 *Block, b2 *Block) bool {
-	return cmp.Equal(b1.Hash, b2.Hash)
+	return bytes.Equal(b1.Hash, b2.Hash)
 }

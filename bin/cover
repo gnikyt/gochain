@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+tmpdir="${TMPDIR:-/tmp}"
+go test -v -coverprofile "$tmpdir"/cover.out ./
+go tool cover -html="$tmpdir"/cover.out -o "$tmpdir"/cover.html
+echo "Open $tmpdir/cover.html in a browser"

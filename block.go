@@ -1,13 +1,13 @@
 package gochain
 
 import (
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/google/go-cmp/cmp"
-	"time"
 	"strconv"
+	"time"
 )
 
 // Reprecents a block.
@@ -56,7 +56,7 @@ func (blk Block) IsValidNonce() bool {
 // Will keep running until the nonce is valid and solved for the difficulty.
 func (blk *Block) Mine() (n int) {
 	for {
-		if ok := blk.ValidateNonce(n); ok != false {
+		if ok := blk.ValidateNonce(n); ok {
 			// Solved
 			break
 		}
@@ -77,14 +77,25 @@ func (blk Block) IsMined() bool {
 }
 
 // Generate a hash for the block based on the block's struct data in JSON format.
-func (blk *Block) GenerateHash() (hs []byte) {
+// Option to save or simply generate.
+func (blk *Block) GenerateHash(save bool) (hs []byte) {
+	// We can't generate a hash of a block with a hash.
+	// So this hash must be temp removed so we can recaulate.
+	oh := blk.Hash
+	blk.Hash = nil
+
 	// Encode the JSON of the struct to a hash.
 	h := sha256.New()
 	h.Write(blk.Encode())
 	hs = h.Sum(nil)
 
-	// Save the hash to the block.
-	blk.Hash = hs
+	if save {
+		// Save the new hash to the block.
+		blk.Hash = hs
+	} else {
+		// Put back the old hash to the block.
+		blk.Hash = oh
+	}
 
 	return
 }
@@ -99,7 +110,7 @@ func (blk Block) IsValid() bool {
 		// Test previous block's index plus one, will equal this block's index.
 		// Test the hash of previous block's hash is what is set for this block's previous hash.
 		// Test this block's nonce is valid
-		if ((pb.Index + 1) == blk.Index) && cmp.Equal(pb.Hash, blk.PreviousHash) && blk.IsValidNonce() {
+		if ((pb.Index + 1) == blk.Index) && bytes.Equal(pb.Hash, blk.PreviousHash) && blk.IsValidNonce() {
 			pok = true
 		} else {
 			pok = false
@@ -108,7 +119,7 @@ func (blk Block) IsValid() bool {
 
 	// Test this blocks hash is equal to a regeneration of the hash.
 	// Test this block is also mined.
-	if cmp.Equal(blk.GenerateHash(), blk.Hash) && blk.IsMined() {
+	if bytes.Equal(blk.GenerateHash(false), blk.Hash) && blk.IsMined() {
 		bok = true
 	} else {
 		bok = false

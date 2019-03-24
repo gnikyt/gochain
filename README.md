@@ -18,6 +18,10 @@ import (
 
 # Testing
 
-*Note: No tests currently wrote*
+*Note: Test not complete*
 
-`go test`
+`bin/test` or `bin/cover` for coverage output.
+
+# Notes
+
+All code is formatted with `gofmt -w .`.
