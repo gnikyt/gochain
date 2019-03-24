@@ -112,6 +112,70 @@ func TestBlockIsNotValid(t *testing.T) {
 	}
 }
 
+// Test the entire mined block can self validate with a full previous block.
+func TestBlockValidatesWithPreviousBlock(t *testing.T) {
+	// Block 1
+	pb := new(Block)
+	blk := &Block{
+		Previous:   pb,
+		Index:      1,
+		Difficulty: 1,
+		Data:       "Hello World",
+		Timestamp:  time.Now(),
+	}
+
+	blk.Mine()
+	blk.GenerateHash(true)
+
+	// Block 2
+	blk2 := &Block{
+		Previous:   blk,
+		Index:      2,
+		Difficulty: 1,
+		Data:       "Hellow World, Again",
+		Timestamp:  time.Now(),
+	}
+
+	blk2.Mine()
+	blk2.GenerateHash(true)
+
+	if !blk.IsValid() || !blk2.IsValid() {
+		t.Errorf("Expected blocks to validate but failed")
+	}
+}
+
+// Test a bad previous block fails to validate.
+func TestBlockIsNotValidWithPreviousBlock(t *testing.T) {
+	// Block 1
+	pb := new(Block)
+	blk := &Block{
+		Previous:   pb,
+		Index:      1,
+		Difficulty: 1,
+		Data:       "Hello World",
+		Timestamp:  time.Now(),
+	}
+
+	blk.Mine()
+	blk.GenerateHash(true)
+
+	// Block 2
+	blk2 := &Block{
+		Previous:   blk,
+		Index:      1, // Change the index
+		Difficulty: 1,
+		Data:       "Hellow World, Again",
+		Timestamp:  time.Now(),
+	}
+
+	blk2.Mine()
+	blk2.GenerateHash(true)
+
+	if blk2.IsValid() {
+		t.Errorf("Expected block to be invalid but result was valid")
+	}
+}
+
 // Create a plain unmined block for test use.
 func createBlock() (blk *Block) {
 	// Create an empty previous block.
@@ -122,12 +186,11 @@ func createBlock() (blk *Block) {
 
 	// Create the block.
 	blk = &Block{
-		Previous:     pb,
-		PreviousHash: pb.Hash,
-		Index:        1,
-		Difficulty:   1,
-		Data:         "Hello World",
-		Timestamp:    ts,
+		Previous:   pb,
+		Index:      1,
+		Difficulty: 1,
+		Data:       "Hello World",
+		Timestamp:  ts,
 	}
 
 	return

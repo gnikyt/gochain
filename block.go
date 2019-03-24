@@ -12,14 +12,31 @@ import (
 
 // Reprecents a block.
 type Block struct {
-	Previous     *Block    `json:"-"`
-	PreviousHash []byte    `json:"previous_hash"`
-	Hash         []byte    `json:"hash"`
-	Index        int       `json:"index"`
-	Nonce        int       `json:"nonce"`
-	Difficulty   int       `json:"difficulty"`
-	Data         string    `json:"data"`
-	Timestamp    time.Time `json:"timestamp"`
+	Previous   *Block    `json:"-"`
+	Hash       []byte    `json:"hash"`
+	Index      int       `json:"index"`
+	Nonce      int       `json:"nonce"`
+	Difficulty int       `json:"difficulty"`
+	Data       string    `json:"data"`
+	Timestamp  time.Time `json:"timestamp"`
+}
+
+// Marshal for JSON encode.
+// Used to add "previous_hash" to the JSON output.
+func (blk Block) MarshalJSON() ([]byte, error) {
+	// Create an alias to the block struct to prevent recursion.
+	type Alias Block
+
+	// Add our previous hash to the alias struct.
+	return json.Marshal(
+		struct {
+			PreviousHash []byte `json:"previous_hash"`
+			Alias
+		}{
+			PreviousHash: blk.Previous.Hash,
+			Alias:        Alias(blk),
+		},
+	)
 }
 
 // Encodes the struct to JSON format.
@@ -109,8 +126,8 @@ func (blk Block) IsValid() bool {
 	if pb := blk.Previous; pb.IsMined() {
 		// Test previous block's index plus one, will equal this block's index.
 		// Test the hash of previous block's hash is what is set for this block's previous hash.
-		// Test this block's nonce is valid
-		if ((pb.Index + 1) == blk.Index) && bytes.Equal(pb.Hash, blk.PreviousHash) && blk.IsValidNonce() {
+		// Test this block's nonce is valid.
+		if ((pb.Index + 1) == blk.Index) && bytes.Equal(pb.Hash, blk.Previous.Hash) && blk.IsValidNonce() {
 			pok = true
 		} else {
 			pok = false
