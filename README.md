@@ -5,8 +5,6 @@
 
 Port of my Blockchain-PHP library to a Golang. The speed is roughly 90% faster.
 
-*Note: Not yet completed.*
-
 ## Usage
 
 ```go
@@ -16,6 +14,8 @@ import (
   gc "github.com/ohmybrew/gochain"
   "fmt"
 )
+
+// See tests for more examples...
 
 // New chain.
 c := new(gc.Chain)
@@ -30,7 +30,23 @@ blk1.GenerateHash(true)
 blk2.Mine()
 blk2.GenerateHash(true)
 
-fmt.Println("Chain is valid?", c.IsValid()); // See tests for more examples
+fmt.Println("Block valid?", blk.IsValid())
+fmt.Println("Block valid?", blk2.IsValid())
+fmt.Println("Same block?", c.IsSameBlock(blk, blk))
+fmt.Println("Chain is valid?", c.IsValid())
+
+// Block to JSON
+j := blk1.Encode()
+fmt.Println(string(j)) // example: {"previous_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}
+
+// Chain to JSON
+cj := c.Encode()
+fmt.Println(string(j)) // example: {"blocks":[{"previous_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}, {...}]}
+
+// Get first, last, previous blocks
+fb, _ := c.FirstBlock() // equals blk1, if no first block, error will be second return
+lb, _ := c.LastBlock() // equals blk2, if no last block, error will be second return
+pb, _ := c.PreviousBlock(1) // by index, 1 - 1 = 0, so this will equal blk1, if no previous block, error will be second return
 ```
 
 ## Testing

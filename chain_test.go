@@ -3,6 +3,7 @@ package gochain
 import (
 	"reflect"
 	"testing"
+	"time"
 )
 
 // Test chain has a length.
@@ -193,5 +194,23 @@ func TestInValidChain(t *testing.T) {
 	// Check the chain.
 	if c.IsValid() {
 		t.Errorf("Expected chain to invalid but result was valid")
+	}
+}
+
+// Test chain ability to encode its struct to JSON data.
+func TestChainEncode(t *testing.T) {
+	// New chain.
+	c := new(Chain)
+
+	// Add a block manually
+	blk := createBlock()
+	c.AddBlock(blk)
+
+	// Actual and expected.
+	a := string(c.Encode())
+	e := "{\"blocks\":[{\"previous_hash\":null,\"hash\":null,\"index\":1,\"nonce\":0,\"difficulty\":1,\"data\":\"Hello World\",\"timestamp\":\"" + blk.Timestamp.Format(time.RFC3339Nano) + "\"}]}"
+
+	if a != e {
+		t.Errorf("Expected encode of %s but got %s", a, e)
 	}
 }

@@ -2,13 +2,21 @@ package gochain
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"time"
 )
 
 // Reprecents a block chain.
 type Chain struct {
-	Blocks []*Block
+	Blocks []*Block `json:"blocks"`
+}
+
+// Encodes the struct to JSON format.
+func (c Chain) Encode() (j []byte) {
+	j, _ = json.Marshal(c)
+
+	return
 }
 
 // Return the chain length.
