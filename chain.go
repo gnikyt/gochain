@@ -2,9 +2,10 @@ package gochain
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"time"
+
+	"encoding/json"
 )
 
 // Reprecents a block chain.

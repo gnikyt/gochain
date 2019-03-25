@@ -3,9 +3,7 @@
 [![Build Status](https://secure.travis-ci.org/ohmybrew/gochain.png?branch=master)](http://travis-ci.org/ohmybrew/gochain)
 [![Coverage Status](https://coveralls.io/repos/github/ohmybrew/gochain/badge.svg?branch=master)](https://coveralls.io/github/ohmybrew/gochain?branch=master)
 
-Port of my Blockchain-PHP library to a Golang package. The speed is roughly 90% faster.
-
-This is a simple implementation which uses a basic SHA256 problem to solve for mining based on a padding of zeros for the difficulty.
+This is a fast and simple implementation which uses a basic SHA256 problem to solve for mining based on a padding of zeros for the difficulty.
 
 ## Usage
 
@@ -22,7 +20,7 @@ import (
 // New chain.
 c := new(gc.Chain)
 
-// Add two blocks, mine them. Difficulty of "2".
+// Add two blocks, mine them with a difficulty level of "2".
 dif := 2
 blk1 := c.BuildBlock(dif, "One")
 blk2 := c.BuildBlock(dif, "Two")
@@ -34,20 +32,20 @@ blk2.GenerateHash(true)
 
 fmt.Println("Block valid?", blk.IsValid())
 fmt.Println("Block valid?", blk2.IsValid())
-fmt.Println("Same block?", c.IsSameBlock(blk, blk))
 fmt.Println("Chain is valid?", c.IsValid())
+fmt.Println("Same block?", c.IsSameBlock(blk, blk))
 
 // Block to JSON
 j := blk1.Encode()
-fmt.Println(string(j)) // example: {"previous_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}
+fmt.Println(string(j)) // {"previous_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}
 
 // Chain to JSON
 cj := c.Encode()
-fmt.Println(string(j)) // example: {"blocks":[{"previous_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}, {...}]}
+fmt.Println(string(j)) // {"blocks":[{"previous_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}, {...}]}
 
 // Get first, last, previous blocks
-fb, _ := c.FirstBlock() // equals blk1, if no first block, error will be second return
-lb, _ := c.LastBlock() // equals blk2, if no last block, error will be second return
+fb, _ := c.FirstBlock()     // equals blk1, if no first block, error will be second return
+lb, _ := c.LastBlock()      // equals blk2, if no last block, error will be second return
 pb, _ := c.PreviousBlock(1) // by index, 1 - 1 = 0, so this will equal blk1, if no previous block, error will be second return
 ```
 

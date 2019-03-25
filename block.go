@@ -2,12 +2,13 @@ package gochain
 
 import (
 	"bytes"
-	"crypto/sha256"
-	"encoding/hex"
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"time"
+
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
 )
 
 // Reprecents a block.
@@ -79,7 +80,7 @@ func (blk *Block) Mine() (n int) {
 		}
 
 		// Not solved, increase.
-		n = n + 1
+		n++
 	}
 
 	// Save the nonce to the block.
@@ -117,28 +118,23 @@ func (blk *Block) GenerateHash(save bool) (hs []byte) {
 	return
 }
 
-// Confirms the block is valid.
+// Confirms the block validity.
 func (blk Block) IsValid() bool {
-	pok := true
-	bok := true
+	pok, bok := true, true
 
-	// Check if we have a previous block to use
+	// Check if we have a previous block to check.
 	if pb := blk.Previous; pb.IsMined() {
 		// Test previous block's index plus one, will equal this block's index.
 		// Test the hash of previous block's hash is what is set for this block's previous hash.
 		// Test this block's nonce is valid.
-		if ((pb.Index + 1) == blk.Index) && bytes.Equal(pb.Hash, blk.Previous.Hash) && blk.IsValidNonce() {
-			pok = true
-		} else {
+		if ((pb.Index + 1) != blk.Index) || !bytes.Equal(pb.Hash, blk.Previous.Hash) || !blk.IsValidNonce() {
 			pok = false
 		}
 	}
 
 	// Test this blocks hash is equal to a regeneration of the hash.
 	// Test this block is also mined.
-	if bytes.Equal(blk.GenerateHash(false), blk.Hash) && blk.IsMined() {
-		bok = true
-	} else {
+	if !bytes.Equal(blk.GenerateHash(false), blk.Hash) || !blk.IsMined() {
 		bok = false
 	}
 
