@@ -81,7 +81,7 @@ You're free to supply any struct to `miner.Block.Miner` so long as it is compati
 
 ## Testing
 
-`go test`, fully tested.
+`go test ./...`, fully tested.
 
 ## Documentation
 

@@ -17,8 +17,8 @@ func TestNewMiner(t *testing.T) {
 	// Get the chunk created
 	ck := getChunk(blk)
 
-	if ck.Index != 1 {
-		t.Errorf("expected index of 1 where parent block is 0, but got %d", ck.Index)
+	if ck.Index != 0 {
+		t.Errorf("expected index of 0 where no parent block is present, but got %d", ck.Index)
 	}
 
 	if ck.Difficulty != dif {
@@ -43,7 +43,7 @@ func TestMinerEncode(t *testing.T) {
 
 	// Actual and expected.
 	a := string(ck.Encode())
-	e := "{\"parent_hash\":null,\"hash\":null,\"index\":1,\"pow\":0,\"difficulty\":1,\"data\":\"Hello World!\",\"timestamp\":\"" + ck.Timestamp.Format(time.RFC3339Nano) + "\"}"
+	e := "{\"parent_hash\":null,\"hash\":null,\"index\":0,\"pow\":0,\"difficulty\":1,\"data\":\"Hello World!\",\"timestamp\":\"" + ck.Timestamp.Format(time.RFC3339Nano) + "\"}"
 
 	if a != e {
 		t.Errorf("expected encode of %s but got %s", a, e)
@@ -57,7 +57,7 @@ func TestMinerGenerateHash(t *testing.T) {
 
 	// Actual and expected.
 	a := hex.EncodeToString(ck.GenerateHash(false))
-	e := "19f925070909fb69c4ccb9a459f9890c549f733b1f305c3aea6f6da5c5cda5a1"
+	e := "866da7defdc2df09616dea46e80ffa8c0ea66517a6bd1f70146c86b1b6a54efd"
 
 	if a != e {
 		t.Errorf("expected hash of %s but got %s", a, e)
@@ -152,10 +152,9 @@ func TestMinerIsNotValid(t *testing.T) {
 // Test the entire miner can self validate with a full parent chunk.
 func TestMinerValidatesWithParentChunk(t *testing.T) {
 	// Chunk 1
-	pck := new(Chunk)
 	ck := &Chunk{
-		Parent:     pck,
-		Index:      1,
+		Parent:     nil,
+		Index:      0,
 		Difficulty: 1,
 		Data:       "Hello World",
 		Timestamp:  time.Now(),
@@ -167,9 +166,9 @@ func TestMinerValidatesWithParentChunk(t *testing.T) {
 	// Chunk 2
 	ck2 := &Chunk{
 		Parent:     ck,
-		Index:      2,
+		Index:      1,
 		Difficulty: 1,
-		Data:       "Hellow World, Again",
+		Data:       "Hello World, Again",
 		Timestamp:  time.Now(),
 	}
 
