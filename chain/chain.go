@@ -67,18 +67,16 @@ func (c Chain) First() (*miner.Block, error) {
 	return c.Get(0)
 }
 
-// Appends block(s) to the chain directly.
+// Appends block to the chain directly.
 // Will return error if block is invalid and validation was asked for.
-func (c *Chain) Append(ver bool, m ...*miner.Block) error {
-	for _, blk := range m {
-		// Verify the block if asked to verify by argument one.
-		if ver && !blk.IsValid() {
-			return errors.New("can not store block to chain, miner is not valid")
-		}
-
-		// All good, append.
-		c.Blocks = append(c.Blocks, blk)
+func (c *Chain) Append(ver bool, blk *miner.Block) error {
+	// Verify the block if asked to verify by argument one.
+	if blk.Miner == nil || (ver && !blk.Miner.IsValid()) {
+		return errors.New("can not store block to chain, miner is not valid")
 	}
+
+	// All good, append.
+	c.Blocks = append(c.Blocks, blk)
 
 	return nil
 }

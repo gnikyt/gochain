@@ -103,7 +103,9 @@ func TestAppendToChainWithInvalid(t *testing.T) {
 	blk2 := miner.New(blk, 1, "Two")
 	(blk.Miner).(*miner.Chunk).Data = "Oops" // Create the invalid issue.
 
-	if err := c.Append(true, blk, blk2); err == nil {
+	err := c.Append(true, blk)
+	err2 := c.Append(true, blk2)
+	if err == nil || err2 == nil {
 		t.Errorf("expected append to be invalid but resulted in success")
 	}
 }
@@ -182,7 +184,8 @@ func createFakeChain() (c *Chain) {
 	blk := miner.New(nil, 1, "One")
 	blk2 := miner.New(blk, 1, "Two")
 
-	c.Append(false, blk, blk2)
+	c.Append(false, blk)
+	c.Append(false, blk2)
 
 	return
 }

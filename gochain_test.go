@@ -24,7 +24,8 @@ func TestWhole(t *testing.T) {
 	blk2.Miner.GenerateHash(true)
 
 	// Append the blocks.
-	c.Append(false, blk, blk2)
+	c.Append(false, blk)
+	c.Append(false, blk2)
 
 	// Validate the chain
 	if !c.IsValid() {

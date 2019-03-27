@@ -28,6 +28,12 @@ func TestNewMiner(t *testing.T) {
 	if ck.Data != data {
 		t.Errorf("expected data to be \"%s\" but got \"%s\"", data, ck.Data)
 	}
+
+	// Previous block should be allowed.
+	blk2 := New(blk, dif, data)
+	if (blk2.Miner).(*Chunk).Parent != (blk.Miner).(*Chunk) {
+		t.Errorf("expected parent to match")
+	}
 }
 
 // Test miner ability to encode its struct to JSON data.
