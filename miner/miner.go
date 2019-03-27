@@ -44,19 +44,20 @@ type (
 
 // Helper to create a new block based on a previous block.
 func New(blk *Block, dif int, data string) *Block {
-	var pck *Chunk
-	if blk == nil {
-		// Genesis block.
-		pck = new(Chunk)
-	} else {
-		// Chained.
-		pck = (blk.Miner).(*Chunk)
+	var pck *Chunk // Previous chunk (will be nil for genesis block)
+	var ni int     // Next index to assign.
+
+	// Determine if a normal block or genesis block.
+	if blk != nil {
+		// Previous block is present, we have a normal block.
+		pck = blk.Miner.(*Chunk)
+		ni = pck.Index + 1
 	}
 
 	return &Block{
 		Miner: &Chunk{
 			Parent:     pck,
-			Index:      pck.Index + 1,
+			Index:      ni,
 			Timestamp:  time.Now(),
 			Difficulty: dif,
 			Data:       data,
@@ -94,20 +95,13 @@ func (ck Chunk) MarshalJSON() ([]byte, error) {
 	// Create an alias to the chunck struct to prevent recursion.
 	type Alias Chunk
 
-	// Get the parent chunk hash.
-	var h []byte
-	pck := ck.Parent
-	if pck != nil {
-		h = pck.Hash
-	}
-
 	// Add our parent hash to the alias struct.
 	return json.Marshal(
 		struct {
 			ParentHash []byte `json:"parent_hash"`
 			Alias
 		}{
-			ParentHash: h,
+			ParentHash: ck.GetParent().Hash,
 			Alias:      Alias(ck),
 		},
 	)
@@ -124,7 +118,7 @@ func (ck Chunk) Encode() (j []byte) {
 // Adding both together and hashing, should equal the padding of the difficulty.
 func (ck Chunk) ValidatePoW(pow int) bool {
 	// Convert the PoW to strings and combine.
-	c := strconv.Itoa(ck.Parent.PoW) + strconv.Itoa(pow)
+	c := strconv.Itoa(ck.GetParent().PoW) + strconv.Itoa(pow)
 
 	// Hash the combined PoW, convert the hash to string.
 	h := sha256.New()
@@ -171,21 +165,45 @@ func (ck *Chunk) GenerateHash(save bool) (sum []byte) {
 func (ck Chunk) IsValid() bool {
 	pok, bok := true, true
 
+	// Determine if hashes are reproduceable.
+	re := func(c Chunk) bool {
+		return bytes.Equal(c.GenerateHash(false), c.Hash)
+	}
+
 	// Check if we have a parent chunk to check.
-	if pck := ck.Parent; pck != nil && pck.IsMined() {
+	if !ck.IsGenesis() {
 		// Test parent chunk's index plus one, will equal this chunk's index.
+		// Test the parent chunk's PoW is valid.
 		// Test the hash of parent chunk's hash is what is set for this chunk's parent hash.
-		// Test this chunk's PoW is valid.
-		if ((pck.Index + 1) != ck.Index) || !bytes.Equal(pck.Hash, ck.Parent.Hash) || !ck.IsValidPoW() {
+		pck := ck.GetParent()
+		if (pck.Index+1 == ck.Index && pck.IsValidPoW() && re(*pck)) == false {
 			pok = false
 		}
 	}
 
+	// Test this block is mined.
 	// Test this blocks hash is equal to a regeneration of the hash.
-	// Test this block is also mined.
-	if !bytes.Equal(ck.GenerateHash(false), ck.Hash) || !ck.IsMined() {
+	if (ck.IsMined() && re(ck)) == false {
 		bok = false
 	}
 
 	return pok && bok
+}
+
+// Determines if the current chunk is a genesis chunk.
+func (ck Chunk) IsGenesis() bool {
+	return ck.Parent == nil
+}
+
+// Gets the parent easily.
+// If this is a genesis block, an empty chunk will be returned.
+// This is so no pointer errors happen during mining.
+func (ck Chunk) GetParent() *Chunk {
+	if ck.IsGenesis() {
+		// Genesis, fill.
+		return new(Chunk)
+	}
+
+	// Normal chunk, return.
+	return ck.Parent
 }
