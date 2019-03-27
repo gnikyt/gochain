@@ -37,8 +37,11 @@ blk2.Miner.GenerateHash(true)
 c.Append(false, blk)
 c.Append(false, blk2)
 
-// See if block is valid.
-fmt.Println("Block valid?", c.IsValid())
+// See if a block is valid.
+fmt.Println("Block valid?", blk.IsValid())
+
+// See if chain is valid.
+fmt.Println("Chain valid?", c.IsValid())
 
 // Block to JSON
 j := blk.Encode()
