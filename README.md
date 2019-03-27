@@ -11,49 +11,77 @@ This is a fast and simple implementation which uses a basic SHA256 problem to so
 package main
 
 import (
-  gc "github.com/ohmybrew/gochain"
+  "github.com/ohmybrew/gochain/chain"
+  "github.com/ohmybrew/gochain/miner"
+
   "fmt"
 )
 
 // See tests for more examples...
 
-// New chain.
-c := new(gc.Chain)
+// Create a new chain.
+c := chain.New()
 
-// Add two blocks, mine them with a difficulty level of "2".
-dif := 2
-blk1 := c.BuildBlock(dif, "One")
-blk2 := c.BuildBlock(dif, "Two")
+// Genesis block and another block joined to it.
+dif := 3 // Difficulty for miner.
+blk := miner.New(nil, dif, "Hello Data")
+blk2 := miner.New(blk, dif, "Hi Data")
 
-blk1.Mine()
-blk1.GenerateHash(true)
-blk2.Mine()
-blk2.GenerateHash(true)
+// Mine both blocks.
+blk.Miner.Mine()
+blk.Miner.GenerateHash(true)
+blk2.Miner.Mine()
+blk2.Miner.GenerateHash(true)
 
-fmt.Println("Block valid?", blk.IsValid())
-fmt.Println("Block valid?", blk2.IsValid())
-fmt.Println("Chain is valid?", c.IsValid())
-fmt.Println("Same block?", c.IsSameBlock(blk, blk))
+// Append the blocks.
+c.Append(false, blk)
+c.Append(false, blk2)
+
+// See if block is valid.
+fmt.Println("Block valid?", c.IsValid())
 
 // Block to JSON
-j := blk1.Encode()
-fmt.Println(string(j)) // {"previous_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}
+j := blk.Encode()
+fmt.Println(string(j)) // {"parent_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}
 
 // Chain to JSON
 cj := c.Encode()
 fmt.Println(string(j)) // {"blocks":[{"previous_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}, {...}]}
 
 // Get first, last, previous blocks
-fb, _ := c.FirstBlock()     // equals blk1, if no first block, error will be second return
-lb, _ := c.LastBlock()      // equals blk2, if no last block, error will be second return
-pb, _ := c.PreviousBlock(1) // by index, 1 - 1 = 0, so this will equal blk1, if no previous block, error will be second return
+fb, _ := c.First()     // equals blk, if no first block, error will be second return.
+lb, _ := c.Last()      // equals blk2, if no last block, error will be second return.
+pb, _ := c.Previous(1) // by index, 1 - 1 = 0, so this will equal blk1, if no previous block, error will be second return.
+gb, _ := c.Get(1)      // get block by index.
 ```
+
+## Custom Miner
+
+`miner.New` in above example is a shortcut to create a block (`miner.Block`) with a miner which implements the `miner.Miner` interface.
+
+The built-in miner is `miner.Chunk`.
+
+```go
+// Previous chunk, for example purposes is empty.
+pck := new(miner.Chunk)
+
+// Create the block with `miner.Chunk` since it satifies the interface.
+blk := &miner.Block{
+  Miner: &miner.Chunk{
+    Parent:     pck,
+    Index:      pck.Index + 1,
+    Timestamp:  time.Now(),
+    Difficulty: dif,
+    Data:       data,
+  },
+}
+```
+
+You're free to supply any struct to `miner.Block.Miner` so long as it is compatible with the `miner.Miner` interface. This way, you're able to develop your own mining solutions and validity.
 
 ## Testing
 
-`bin/test` for test suite.
-
-`bin/cover` for test suite with coverage output.
+`go test`, fully tested.
 
 ## Documentation
 
@@ -61,7 +89,7 @@ Available through [godoc.org](https://godoc.org/github.com/ohmybrew/gochain).
 
 Important files:
 
-+ `block.go` contains the struct for a block and its methods.
++ `chain/block.go` contains the struct for a block and its methods.
 + `chain.go` contains the struct for the chain and its methods.
 + `gochain.go` is empty, simply the package index.
 
