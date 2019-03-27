@@ -42,27 +42,27 @@ fmt.Println("Block valid?", c.IsValid())
 
 // Block to JSON
 j := blk.Encode()
-fmt.Println(string(j)) // {"parent_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}
+fmt.Println(string(j)) // {"parent_hash": ..., "hash": ..., "index": ..., "pow": ..., "timestamp": ..., "difficulty": ..., "data": ...}
 
 // Chain to JSON
 cj := c.Encode()
-fmt.Println(string(j)) // {"blocks":[{"previous_hash": ..., "hash": ..., "index": ..., "nonce": ..., "timestamp": ..., "difficulty": ..., "data": ...}, {...}]}
+fmt.Println(string(j)) // {"blocks":[{"parent_hash": ..., "hash": ..., "index": ..., "pow": ..., "timestamp": ..., "difficulty": ..., "data": ...}, {...}]}
 
-// Get first, last, previous blocks
+// Get first, last, previous blocks; and block by index.
 fb, _ := c.First()     // equals blk, if no first block, error will be second return.
 lb, _ := c.Last()      // equals blk2, if no last block, error will be second return.
 pb, _ := c.Previous(1) // by index, 1 - 1 = 0, so this will equal blk1, if no previous block, error will be second return.
 gb, _ := c.Get(1)      // get block by index.
 ```
 
-## Custom Miner
+### Custom Miner
 
-`miner.New` in above example is a shortcut to create a block (`miner.Block`) with a miner which implements the `miner.Miner` interface.
+`miner.New(...)` in above example is a shortcut to create a block struct `miner.Block`, with a miner which implements the `miner.Miner` interface.
 
-The built-in miner is `miner.Chunk`.
+The built-in miner is `miner.Chunk` struct.
 
 ```go
-// Previous chunk, for example purposes is empty.
+// Previous chunk struct... for example purposes is empty.
 pck := new(miner.Chunk)
 
 // Create the block with `miner.Chunk` since it satifies the interface.
